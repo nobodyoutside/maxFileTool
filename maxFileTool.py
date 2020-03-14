@@ -32,7 +32,7 @@ class FileToolUI(QtWidgets.QDialog):
 
         self.saveMaxBtn = QtWidgets.QPushButton(u"max로 저장")
         self.saveFbxBtn = QtWidgets.QPushButton(u"fbx로 저장")
-        self.openFolder = QtWidgets.QPushButton(u"fbx로 저장")
+        self.openFolder = QtWidgets.QPushButton(u"경로 열기")
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.main_dir_path)
         self.maxFileNameEdit = QtWidgets.QLineEdit(self.current_maxfile_name, self)
         self.fileAnnotaionEdit = QtWidgets.QLineEdit(u"주석", self)
@@ -49,8 +49,10 @@ class FileToolUI(QtWidgets.QDialog):
         self.inputFileNameLayout.addWidget(self.maxFileNameEdit)
         self.inputFileNameLayout.addWidget(self.fileAnnotaionEdit)
         
+        # 레이아웃에 버튼 추가
         self.button_layout.addWidget(self.saveMaxBtn)
         self.button_layout.addWidget(self.saveFbxBtn)
+        self.button_layout.addWidget(self.openFolder)
 
         self.setLayout(self.main_layout)
         self.updateUI()
