@@ -1,6 +1,6 @@
 import MaxPlus
 import pymxs
-import os
+#import os
 from PySide2 import QtWidgets, QtCore, QtGui
 
 RT = pymxs.runtime
@@ -14,39 +14,49 @@ class FileToolUI(QtWidgets.QDialog):
 
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(FileToolUI, self).__init__(parent)
+        self.main_dir_path = RT.getFilenamePath(RT.maxfilepath)
+        self.current_MaxFilePath = u""
+        self.current_maxfile_name = RT.maxFileName
         self.setWindowTitle(u"파일툴")
         self.initUI()
 
     def initUI(self):
-        mainLayout = QtWidgets.QVBoxLayout()
-        maxFileListLayout = QtWidgets.QVBoxLayout()
-        mainLayout.addLayout(maxFileListLayout)
-        inputFileNameLayout =  QtWidgets.QHBoxLayout()
-        mainLayout.addLayout(inputFileNameLayout)
-        buttonLayout = QtWidgets.QHBoxLayout()
-        mainLayout.addLayout(buttonLayout)
+        self.main_layout = QtWidgets.QVBoxLayout()
+        
+        self.maxfile_list_layout = QtWidgets.QVBoxLayout()
+        self.inputFileNameLayout = QtWidgets.QHBoxLayout()
+        self.button_layout = QtWidgets.QHBoxLayout()
+        self.main_layout.addLayout(self.maxfile_list_layout)
+        self.main_layout.addLayout(self.inputFileNameLayout)
+        self.main_layout.addLayout(self.button_layout)
 
-        #maxScriptsDir = MaxPlus.PathManager.GetScriptsDir()
-        fileDir = MaxPlus.FileManager.GetFileNameAndPath()
-        testLabel = QtWidgets.QLabel(u"대상 경로 " + fileDir)
-        maxFileListLayout.addWidget(testLabel)
-        filesList_QListView = QtWidgets.QListView()
-        filesList_QListView.ResizeMode = QtWidgets.QListView.Adjust
-        filesList_QListView.LayoutMode
-        filesList_QListView.ViewMode = QtWidgets.QListView.ListMode
-        maxFileListLayout.addWidget(filesList_QListView)
-        fileName = u"파일 이름"
-        maxFileNameEdit = QtWidgets.QLineEdit(fileName, self)
+        self.saveMaxBtn = QtWidgets.QPushButton(u"max로 저장")
+        self.saveFbxBtn = QtWidgets.QPushButton(u"fbx로 저장")
+        self.openFolder = QtWidgets.QPushButton(u"fbx로 저장")
+        self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.main_dir_path)
+        self.maxFileNameEdit = QtWidgets.QLineEdit(self.current_maxfile_name, self)
+        self.fileAnnotaionEdit = QtWidgets.QLineEdit(u"주석", self)
+        self.filesList_QListView = QtWidgets.QListWidget()
+        self.filesList_QListView.ResizeMode = QtWidgets.QListView.Adjust
+        self.filesList_QListView.LayoutMode
+        self.filesList_QListView.ViewMode = QtWidgets.QListView.ListMode
+        for i in range(1,6):
+            self.filesList_QListView.addItem(str(i))
+        
+        self.maxfile_list_layout.addWidget(self.dirLabel)
+        self.maxfile_list_layout.addWidget(self.filesList_QListView)
         #testEdit.setPlaceholderText("파일 이름")
-        inputFileNameLayout.addWidget(maxFileNameEdit)
-        fileAnnotaion = QtWidgets.QLineEdit("주석", self)
-        inputFileNameLayout.addWidget(fileAnnotaion)
-        saveMaxBtn = QtWidgets.QPushButton(u"max로 저장")
-        buttonLayout.addWidget(saveMaxBtn)
-        saveFbxBtn = QtWidgets.QPushButton(u"fbx로 저장")
-        buttonLayout.addWidget(saveFbxBtn)
+        self.inputFileNameLayout.addWidget(self.maxFileNameEdit)
+        self.inputFileNameLayout.addWidget(self.fileAnnotaionEdit)
+        
+        self.button_layout.addWidget(self.saveMaxBtn)
+        self.button_layout.addWidget(self.saveFbxBtn)
 
-        self.setLayout(mainLayout)
+        self.setLayout(self.main_layout)
+        self.updateUI()
+        
+    def updateUI(self):
+        print(u"updateUI")
 
     def GetFileList(self):
         pass
