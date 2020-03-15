@@ -58,7 +58,7 @@ class FileToolUI(QtWidgets.QDialog):
         # ui객체
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.m_main_dir_path)
         self.filesList_tree_widget = QtWidgets.QTreeWidget()
-        self.filesList_tree_widget.setHeaderLabel(u"파일이름")
+        self.filesList_tree_widget.setHeaderLabels([u"index",u"파일이름"])
         # 
         self.maxFileNameEdit = QtWidgets.QLineEdit(self.m_current_maxfile_name, self)
         self.version_label = QtWidgets.QLabel(u"Va00")
@@ -81,19 +81,20 @@ class FileToolUI(QtWidgets.QDialog):
         self.button_layout.addWidget(self.saveFbxBtn)
         self.button_layout.addWidget(self.openFolder)
         # 연결
-        self.openFolder.clicked.connect(self.OpenCurrentMaxFile) #clicked.connects는 인자명으로 전달, 함수 아님
+        self.filesList_tree_widget.doubleClicked.connect(self.LoadMaxFile)
+        self.openFolder.clicked.connect(self.OpenDirCurrentFile) #clicked.connects는 인자명으로 전달, 함수 아님
         # 메인 레아아웃 추가
         self.setLayout(self.main_layout)
-        self.updateUI()
-    def printFileNameSet(self, name_set):
-        pass
-    def updateUI(self):
-        print(u"updateUI")
-        self.GetFileList()
-        # 열려있는 파일 정보 업데이트
+        self.UpdateUI()
+    def CurrentFileUIDataUpdate(self):
         current_file_set = self.GetCurrentFileNameSet()
         self.version_label.setText(current_file_set.Get_version_str())
         self.fileannotationEdit.setText(current_file_set.annotation)
+    def UpdateUI(self):
+        print(u"UpdateUI")
+        self.GetFileList()
+        # 열려있는 파일 정보 업데이트
+        self.CurrentFileUIDataUpdate()
     def GetNewFileNameSet(self,file_index, file_full_path_str):
         ''' FileNameSet 클래스 반환 '''
         file_path = RT.getFilenamePath(file_full_path_str)
@@ -114,7 +115,6 @@ class FileToolUI(QtWidgets.QDialog):
             if is_Version_file:
                 number_head = test_str_list[0][1]
                 number = test_str_list[0][2:4]
-                print('버전수:'+ str(number))
             else:
                 annotation = temp_list[1]
             if is_Version_file and len(split1_list) > 1:
@@ -139,7 +139,8 @@ class FileToolUI(QtWidgets.QDialog):
         for file_str in maxfiles:
             file_name = RT.filenameFromPath(file_str)
             item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
-            item.setText(0, self.fileSet_List[max_index].name)
+            item.setText(0, str(self.fileSet_List[max_index].index))
+            item.setText(1, self.fileSet_List[max_index].name)
             max_index = max_index + 1
 
     def SaveMaxFile(self, fileName, annotation):
@@ -150,7 +151,19 @@ class FileToolUI(QtWidgets.QDialog):
         pass
     def InPutFileName(self, fileNameString):
         pass
-    def OpenCurrentMaxFile(self):
+    def LoadMaxFile(self, index_QModelIndex):
+        #print('맥스파일 열기')
+        #print(type(index_QModelIndex))
+        #print(index_QModelIndex.data(0))
+        #print(str(index_QModelIndex.column()))
+        #print(str(index_QModelIndex.row()))
+        #print(self.fileSet_List[index_QModelIndex.row()].full_path)
+        #MaxPlus.FileManager.Open(self.fileSet_List[index_QModelIndex.row()].full_path, True, True,True) #열때 경고문이 보여서 MaxScript로 대체 quiet옵션이 없음.
+        run_string = "loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (self.fileSet_List[index_QModelIndex.row()].full_path)
+        print(run_string)
+        MaxPlus.Core.EvalMAXScript(run_string)
+        self.CurrentFileUIDataUpdate()
+    def OpenDirCurrentFile(self):
         RT.ShellLaunch(self.m_current_MaxFilePath, "")
 
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
