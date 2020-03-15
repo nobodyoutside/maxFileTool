@@ -14,8 +14,9 @@ class FileToolUI(QtWidgets.QDialog):
 
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(FileToolUI, self).__init__(parent)
+        RT.clearlistener()
         self.main_dir_path = RT.getFilenamePath(RT.maxfilepath)
-        self.current_MaxFilePath = u""
+        self.current_MaxFilePath = RT.getFilenamePath(RT.maxfilepath)
         self.current_maxfile_name = RT.maxFileName
         self.setWindowTitle(u"파일툴")
         self.initUI()
@@ -54,6 +55,8 @@ class FileToolUI(QtWidgets.QDialog):
         self.button_layout.addWidget(self.saveFbxBtn)
         self.button_layout.addWidget(self.openFolder)
 
+        self.openFolder.clicked.connect(self.OpenCurrentMaxFile)
+
         self.setLayout(self.main_layout)
         self.updateUI()
         
@@ -71,6 +74,9 @@ class FileToolUI(QtWidgets.QDialog):
 
     def InPutFileName(self, fileNameString):
         pass
+    def OpenCurrentMaxFile(self):
+        RT.ShellLaunch(self.current_MaxFilePath, "")
+
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
 #if __name__ == "__main__":
 try:
