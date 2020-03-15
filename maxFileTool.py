@@ -22,30 +22,30 @@ class FileToolUI(QtWidgets.QDialog):
 
     def initUI(self):
         self.main_layout = QtWidgets.QVBoxLayout()
-        
+        # 레이아웃
         self.maxfile_list_layout = QtWidgets.QVBoxLayout()
         self.inputFileNameLayout = QtWidgets.QHBoxLayout()
         self.button_layout = QtWidgets.QHBoxLayout()
+        
         self.main_layout.addLayout(self.maxfile_list_layout)
         self.main_layout.addLayout(self.inputFileNameLayout)
         self.main_layout.addLayout(self.button_layout)
-
+        # ui객체
+        self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.main_dir_path)
+        self.filesList_tree_widget = QtWidgets.QTreeWidget()
+        self.filesList_tree_widget.setHeaderLabel(u"파일이름")
+        self.maxFileNameEdit = QtWidgets.QLineEdit(self.current_maxfile_name, self)
+        self.fileAnnotaionEdit = QtWidgets.QLineEdit(u"주석", self)
         self.saveMaxBtn = QtWidgets.QPushButton(u"max로 저장")
         self.saveFbxBtn = QtWidgets.QPushButton(u"fbx로 저장")
         self.openFolder = QtWidgets.QPushButton(u"경로 열기")
-        self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.main_dir_path)
-        self.maxFileNameEdit = QtWidgets.QLineEdit(self.current_maxfile_name, self)
-        self.fileAnnotaionEdit = QtWidgets.QLineEdit(u"주석", self)
-        self.filesList_QListView = QtWidgets.QListWidget()
-        self.filesList_QListView.ResizeMode = QtWidgets.QListView.Adjust
-        self.filesList_QListView.LayoutMode
-        self.filesList_QListView.ViewMode = QtWidgets.QListView.ListMode
+
         for i in range(1,6):
-            self.filesList_QListView.addItem(str(i))
+            item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
+            item.setText(0, str(i))
         
         self.maxfile_list_layout.addWidget(self.dirLabel)
-        self.maxfile_list_layout.addWidget(self.filesList_QListView)
-        #testEdit.setPlaceholderText("파일 이름")
+        self.maxfile_list_layout.addWidget(self.filesList_tree_widget)
         self.inputFileNameLayout.addWidget(self.maxFileNameEdit)
         self.inputFileNameLayout.addWidget(self.fileAnnotaionEdit)
         
