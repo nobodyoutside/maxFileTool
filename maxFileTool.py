@@ -49,6 +49,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.initUI()
 
     def initUI(self):
+        self.resize(QtCore.QSize(460,300))
         self.main_layout = QtWidgets.QVBoxLayout()
         # 레이아웃
         self.maxfile_list_layout = QtWidgets.QVBoxLayout()
@@ -60,7 +61,12 @@ class FileToolUI(QtWidgets.QDialog):
         # ui객체
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.m_main_dir_path)
         self.filesList_tree_widget = QtWidgets.QTreeWidget()
-        self.filesList_tree_widget.setHeaderLabels([u"파일이름"])
+        self.filesList_tree_widget.setHeaderLabels([u"파일이름", u"버전", u"설명"])
+        head_item = self.filesList_tree_widget.headerItem()
+        head_item.setSizeHint(0, QtCore.QSize(200, 25))
+        head_view = self.filesList_tree_widget.header()
+        head_view.resizeSection(0, 200)
+        head_view.resizeSection(1, 35)
         # 입력란
         self.maxFileNameEdit = QtWidgets.QLineEdit(self.m_current_maxfile_name, self)
         self.version_label = QtWidgets.QLabel(u"Va00")
@@ -91,11 +97,8 @@ class FileToolUI(QtWidgets.QDialog):
         # 메인 레아아웃 추가
         self.setLayout(self.main_layout)
         self.UpdateUI()
-    def CurrentFileUIDataUpdate(self):
-        self.m_current_file_set = self.GetCurrentFileNameSet()
-        self.maxFileNameEdit.setText(self.m_current_file_set.name)
-        self.version_label.setText(self.m_current_file_set.Get_version_str())
-        self.fileannotationEdit.setText(self.m_current_file_set.annotation)
+
+    # UI 업데이트
     def ReturnNameEdit(self):
         self.version_label.setText("Va00")
     def UpdateUI(self):
@@ -103,6 +106,30 @@ class FileToolUI(QtWidgets.QDialog):
         self.GetFileList()
         # 열려있는 파일 정보 업데이트
         self.CurrentFileUIDataUpdate()
+    def GetFileList(self, maxfiles = []):
+        maxfiles = RT.GetFiles(self.m_current_MaxFilePath + "*.max")
+        self.fileSet_List = []
+        # 파일을 수집하여 네임셋으로 저장
+        file_index = 0
+        for file_full_path_str in maxfiles:
+            new_file_set = self.GetNewFileNameSet(file_index, file_full_path_str)
+            self.fileSet_List.append(new_file_set)
+            file_index = file_index + 1
+        max_index = 0
+        self.filesList_tree_widget.clear() 
+        for file_str in maxfiles:
+            file_name = RT.filenameFromPath(file_str)
+            item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
+            item.setText(0, self.fileSet_List[max_index].name)
+            item.setText(1, self.fileSet_List[max_index].number_str )
+            item.setText(2, self.fileSet_List[max_index].annotation)
+            max_index = max_index + 1
+    def CurrentFileUIDataUpdate(self):
+        self.m_current_file_set = self.GetCurrentFileNameSet()
+        self.maxFileNameEdit.setText(self.m_current_file_set.name)
+        self.version_label.setText(self.m_current_file_set.Get_version_str())
+        self.fileannotationEdit.setText(self.m_current_file_set.annotation)
+    # FileNameSet 클래스
     def GetNewFileNameSet(self,file_index, file_full_path_str):
         ''' FileNameSet 클래스 반환 '''
         file_path = RT.getFilenamePath(file_full_path_str)
@@ -132,22 +159,7 @@ class FileToolUI(QtWidgets.QDialog):
         path_full = RT.maxfilepath + RT.maxfileName
         current_file_nameSet = self.GetNewFileNameSet(-1, path_full)
         return current_file_nameSet
-    def GetFileList(self, maxfiles = []):
-        maxfiles = RT.GetFiles(self.m_current_MaxFilePath + "*.max")
-        self.fileSet_List = []
-        # 파일을 수집하여 네임셋으로 저장
-        file_index = 0
-        for file_full_path_str in maxfiles:
-            new_file_set = self.GetNewFileNameSet(file_index, file_full_path_str)
-            self.fileSet_List.append(new_file_set)
-            file_index = file_index + 1
-        max_index = 0
-        self.filesList_tree_widget.clear() 
-        for file_str in maxfiles:
-            file_name = RT.filenameFromPath(file_str)
-            item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
-            item.setText(0, self.fileSet_List[max_index].name)
-            max_index = max_index + 1
+    # File 기능
     def SaveMaxFile(self, isVersionUp_bool = False):
         print(u'버튼 연결 test: %s \n' % str(isVersionUp_bool))
         annotation_str = self.fileannotationEdit.text()
@@ -180,12 +192,6 @@ class FileToolUI(QtWidgets.QDialog):
         pass
     def LoadMaxFile(self, index_QModelIndex):
         #print('맥스파일 열기')
-        #print(type(index_QModelIndex))
-        #print(index_QModelIndex.data(0))
-        #print(str(index_QModelIndex.column()))
-        #print(str(index_QModelIndex.row()))
-        #print(self.fileSet_List[index_QModelIndex.row()].full_path)
-        #MaxPlus.FileManager.Open(self.fileSet_List[index_QModelIndex.row()].full_path, True, True,True) #열때 경고문이 보여서 MaxScript로 대체 quiet옵션이 없음.
         run_string = "loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (self.fileSet_List[index_QModelIndex.row()].full_path)
         print(run_string)
         MaxPlus.Core.EvalMAXScript(run_string)
