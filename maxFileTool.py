@@ -61,7 +61,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.m_main_dir_path)
         self.filesList_tree_widget = QtWidgets.QTreeWidget()
         self.filesList_tree_widget.setHeaderLabels([u"파일이름"])
-        # 
+        # 입력란
         self.maxFileNameEdit = QtWidgets.QLineEdit(self.m_current_maxfile_name, self)
         self.version_label = QtWidgets.QLabel(u"Va00")
         self.fileannotationEdit = QtWidgets.QLineEdit(FileToolUI._annotation_default_str, self)
@@ -84,8 +84,8 @@ class FileToolUI(QtWidgets.QDialog):
         self.button_layout.addWidget(self.openFolder)
         # 연결s
         self.maxFileNameEdit.returnPressed.connect(self.ReturnNameEdit)
-        self.saveMaxBtn.clicked.connect(self.SaveMaxFile)
-        self.savePlueMaxBtn.clicked.connect(self.SaveVersionUp)
+        self.saveMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = False))
+        self.savePlueMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = True))
         self.filesList_tree_widget.doubleClicked.connect(self.LoadMaxFile)
         self.openFolder.clicked.connect(self.OpenDirCurrentFile) #clicked.connects는 인자명으로 전달, 함수 아님
         # 메인 레아아웃 추가
@@ -93,6 +93,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.UpdateUI()
     def CurrentFileUIDataUpdate(self):
         self.m_current_file_set = self.GetCurrentFileNameSet()
+        self.maxFileNameEdit.setText(self.m_current_file_set.name)
         self.version_label.setText(self.m_current_file_set.Get_version_str())
         self.fileannotationEdit.setText(self.m_current_file_set.annotation)
     def ReturnNameEdit(self):
@@ -141,23 +142,14 @@ class FileToolUI(QtWidgets.QDialog):
             self.fileSet_List.append(new_file_set)
             file_index = file_index + 1
         max_index = 0
+        self.filesList_tree_widget.clear() 
         for file_str in maxfiles:
             file_name = RT.filenameFromPath(file_str)
             item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
             item.setText(0, self.fileSet_List[max_index].name)
             max_index = max_index + 1
-    def SaveMaxFile(self):
-        annotation_str = self.fileannotationEdit.text()
-        annotation_enable = True
-        if annotation_str == FileToolUI._annotation_default_str:
-            annotation_str = ""
-        if annotation_str == "":
-            annotation_enable = False
-        if annotation_enable:
-            annotation_str = "_" + annotation_str
-        save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + ", " + self.version_label.text() + annotation_str + self.m_current_file_set.extension
-        MaxPlus.FileManager.Save(save_file_name)
-    def SaveVersionUp(self):
+    def SaveMaxFile(self, isVersionUp_bool = False):
+        print(u'버튼 연결 test: %s \n' % str(isVersionUp_bool))
         annotation_str = self.fileannotationEdit.text()
         annotation_enable = True
         if annotation_str == FileToolUI._annotation_default_str:
@@ -167,15 +159,21 @@ class FileToolUI(QtWidgets.QDialog):
         if annotation_enable:
             annotation_str = "_" + annotation_str
         current_version_str = self.version_label.text()
-        try:
-            current_version_int = int(current_version_str[2:])
-        except:
-            print("넘버링 변환오류")
-            print(current_version_str)
-            current_version_int = 0
-        current_version_str = current_version_str[:2] + str(current_version_int+1)
+        # 버전업 저장
+        if isVersionUp_bool:
+            try:
+                current_version_int = int(current_version_str[2:])
+            except:
+                print("넘버링 변환오류")
+                print(current_version_str)
+                current_version_int = 0
+            new_num_str = str(current_version_int+1)
+            if len(new_num_str) == 1:
+                new_num_str = "0" + new_num_str
+            current_version_str = current_version_str[:2] + new_num_str
         save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + ", " + current_version_str + annotation_str + self.m_current_file_set.extension
         MaxPlus.FileManager.Save(save_file_name)
+        self.UpdateUI()
     def ExportFBX(self, fileName):
         pass
     def InPutFileName(self, fileNameString):
