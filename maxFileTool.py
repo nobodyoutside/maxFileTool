@@ -82,7 +82,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.button_layout.addWidget(self.savePlueMaxBtn)
         self.button_layout.addWidget(self.saveFbxBtn)
         self.button_layout.addWidget(self.openFolder)
-        # 연결
+        # 연결s
         self.maxFileNameEdit.returnPressed.connect(self.ReturnNameEdit)
         self.saveMaxBtn.clicked.connect(self.SaveMaxFile)
         self.savePlueMaxBtn.clicked.connect(self.SaveVersionUp)
