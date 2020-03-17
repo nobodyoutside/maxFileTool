@@ -198,7 +198,17 @@ class FileToolUI(QtWidgets.QDialog):
         self.CurrentFileUIDataUpdate()
     def OpenDirCurrentFile(self):
         RT.ShellLaunch(self.m_current_MaxFilePath, "")
-
+    def MakeBackupFile(self):
+        ''' 파일을 최신 버전만 남기고 백업 폴더로 보냄'''
+        pass
+    def OptimizingBackupFile(self):
+        ''' 백업 폴더의 파일을 같은 주석은 최신버전만
+        그리고 주석이 없는 파일을 삭제
+        단 가장 마지막의 버전은 제외 '''
+        pass
+    def CleanUpBackupFile(self):
+        ''' 모든 백업 파일을 제거 '''
+        pass
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
 #if __name__ == "__main__":
 try:
