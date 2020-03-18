@@ -2,7 +2,7 @@ name "PyFileTools"
 version 1.00
 
 copy PyFileTools.py to $userScripts\Seo_FileTools
-drop "PyFileTool_run.mcr"
-run "PyFileTool_run.mcr"
+drop "PyFilesTool_run.mcr"
+run "PyFilesTool_run.mcr"
 
 clear temp on reset 
