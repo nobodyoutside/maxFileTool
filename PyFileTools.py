@@ -35,6 +35,7 @@ class FileNameSet():
 
 
 class FileToolUI(QtWidgets.QDialog):
+    _version = 1.0
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
     _annotation_default_str = u"주석"
     _backup_dir_name = u'_bak\\'
