@@ -37,10 +37,12 @@ class FileNameSet():
 class FileToolUI(QtWidgets.QDialog):
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
     _annotation_default_str = u"주석"
+    _backup_dir_name = u'_bak\\'
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(FileToolUI, self).__init__(parent)
         RT.clearlistener()
         self.m_main_dir_path = RT.getFilenamePath(RT.maxfilepath)
+        self.m_backup_dir_path = self.m_main_dir_path + FileToolUI._backup_dir_name
         self.m_current_MaxFilePath = RT.getFilenamePath(RT.maxfilepath)
         self.m_current_maxfile_name = RT.getFilenameFile(RT.maxFileName).split(',')[0]
         self.m_current_file_set = self.GetCurrentFileNameSet()
@@ -103,27 +105,68 @@ class FileToolUI(QtWidgets.QDialog):
         self.version_label.setText("Va00")
     def UpdateUI(self):
         print(u"UpdateUI")
+        self.MoveBackupFile()
         self.GetFileList()
         # 열려있는 파일 정보 업데이트
         self.CurrentFileUIDataUpdate()
-    def GetFileList(self, maxfiles = []):
-        maxfiles = RT.GetFiles(self.m_current_MaxFilePath + "*.max")
-        self.fileSet_List = []
-        # 파일을 수집하여 네임셋으로 저장
+    def MakeFileSetList(self, target_dir, target_extension = "max"):
+        maxfiles = RT.GetFiles(target_dir + u"*.{}".format(target_extension))
+        set_liset = []
         file_index = 0
         for file_full_path_str in maxfiles:
             new_file_set = self.GetNewFileNameSet(file_index, file_full_path_str)
-            self.fileSet_List.append(new_file_set)
+            set_liset.append(new_file_set)
             file_index = file_index + 1
+        return set_liset
+    def GetFileList(self, maxfiles = []):
+        maxfiles = RT.GetFiles(self.m_current_MaxFilePath + "*.max")
+        self.fileSet_List = []
+        self.current_dir_file_set_list = []
+        self.baup_dir_file_set_liset = []
+        self.unique_name_list = []
+        self.unique_file_set_collection_list = []
+        # 파일을 수집하여 네임셋으로 저장
+        self.current_dir_file_set_list = self.MakeFileSetList(self.m_current_MaxFilePath)
+        for file_set in self.current_dir_file_set_list:
+            self.unique_name_list.append(file_set.name)
+        # 백업파일 정리
+        ## 같은 이름 수집
+        for unique_name_string in self.unique_name_list:
+            unique_file_set_collection = []
+            for file_set in self.current_dir_file_set_list:
+                if file_set.name == unique_name_string:
+                    unique_file_set_collection.append(file_set)
+            self.unique_file_set_collection_list.append(sorted(unique_file_set_collection, key=lambda file_set: file_set.number_str))
+        ## 파일 이동
+        #MaxPlus.Core.EvalMAXScript(u'makeDir back_dir')
+        RT.execute(u'makeDir @\"{}\"'.format(self.m_backup_dir_path))
+        for file_collection in self.unique_file_set_collection_list:
+            if len(file_collection) > 1:
+                for file_set in file_collection[:-1]:
+                    print(file_set.full_path)
+                    if file_set.number_str == "":
+                        continue
+                    new_full_path = self.m_backup_dir_path +  file_set.name + ", V" + file_set.number_head + file_set.number_str + '_' + file_set.annotation + file_set.extension 
+                    RT.execute(u'renameFile @\"{0}\" @\"{1}\"'.format(file_set.full_path, new_full_path ))
+        # 리스트 재정리
+        ## 현제경로 파일 수집
+        self.fileSet_List = self.MakeFileSetList(self.m_current_MaxFilePath)
+        # 백업폴더 파일 수집
+        self.backup_file_set_liset = self.MakeFileSetList(self.m_backup_dir_path)
+        # UI리스트 업데이트
         max_index = 0
         self.filesList_tree_widget.clear() 
-        for file_str in maxfiles:
-            file_name = RT.filenameFromPath(file_str)
+        for file_set in self.fileSet_List:
             item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
-            item.setText(0, self.fileSet_List[max_index].name)
-            item.setText(1, self.fileSet_List[max_index].number_str )
-            item.setText(2, self.fileSet_List[max_index].annotation)
-            max_index = max_index + 1
+            item.setText(0, file_set.name)
+            item.setText(1, file_set.number_str )
+            item.setText(2, file_set.annotation)
+            for backup_file_set in self.backup_file_set_liset:
+                if backup_file_set.name == file_set.name:
+                    sub_item = QtWidgets.QTreeWidgetItem(item)
+                    sub_item.setText(0, backup_file_set.name)
+                    sub_item.setText(1, backup_file_set.number_str )
+                    sub_item.setText(2, backup_file_set.annotation)
     def CurrentFileUIDataUpdate(self):
         self.m_current_file_set = self.GetCurrentFileNameSet()
         self.maxFileNameEdit.setText(self.m_current_file_set.name)
@@ -198,16 +241,16 @@ class FileToolUI(QtWidgets.QDialog):
         self.CurrentFileUIDataUpdate()
     def OpenDirCurrentFile(self):
         RT.ShellLaunch(self.m_current_MaxFilePath, "")
-    def MakeBackupFile(self):
-        ''' 파일을 최신 버전만 남기고 백업 폴더로 보냄'''
+    def MoveBackupFile(self):
+        u''' 파일을 최신 버전만 남기고 백업 폴더로 보냄'''
         pass
-    def OptimizingBackupFile(self):
-        ''' 백업 폴더의 파일을 같은 주석은 최신버전만
+    def OptimizingBackupFolder(self):
+        u''' 백업 폴더의 파일을 같은 주석은 최신버전만
         그리고 주석이 없는 파일을 삭제
         단 가장 마지막의 버전은 제외 '''
         pass
     def CleanUpBackupFile(self):
-        ''' 모든 백업 파일을 제거 '''
+        u''' 모든 백업 파일을 제거 '''
         pass
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
 #if __name__ == "__main__":
