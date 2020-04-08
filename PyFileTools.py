@@ -87,16 +87,19 @@ class FileToolUI(QtWidgets.QDialog):
         self.inputFileNameLayout.addWidget(self.version_label)
         self.inputFileNameLayout.addWidget(self.fileannotationEdit)
         # 버튼 위젯 추가
-        #self.button_layout.addWidget(self.saveMaxBtn)
+        self.button_layout.addWidget(self.saveMaxBtn)
         self.button_layout.addWidget(self.savePlueMaxBtn)
         self.button_layout.addWidget(self.saveFbxBtn)
         self.button_layout.addWidget(self.openFolder)
-        # 연결s
+        # 연결
         self.saveMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = False))
         self.savePlueMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = True))
         self.filesList_tree_widget.doubleClicked.connect(self.LoadMaxFile)
         self.openFolder.clicked.connect(self.OpenDirCurrentFile) #clicked.connects는 인자명으로 전달, 함수 아님
         self.maxFileNameEdit.returnPressed.connect(self.ReturnNameEdit)
+        # 삭제용 우클릭 메뉴
+        # QContextMenuEvent
+        #
         # 메인 레아아웃 추가
         self.setLayout(self.main_layout)
         self.UpdateUI()
@@ -226,9 +229,10 @@ class FileToolUI(QtWidgets.QDialog):
             annotation_enable = False
         if annotation_enable:
             annotation_str = u"_" + annotation_str
-        current_version_str = self.version_label.text()
+        current_version_str = u"Va00"
         # 버전업 저장을 위해서 버전 글자 확인
         if isVersionUp_bool:
+            current_version_str = self.version_label.text()
             try:
                 current_version_int = int(current_version_str[2:])
             except:
@@ -272,6 +276,10 @@ class FileToolUI(QtWidgets.QDialog):
         pass
     def CleanUpBackupFile(self):
         u''' 모든 백업 파일을 제거 '''
+        delect_file_list = []
+        for file_path in delect_file_list:
+            maxscript_string = u"deleteFile {}".format(file_path)
+            MaxPlus.Core.EvalMAXScript(maxscript_string)
         pass
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
 #if __name__ == "__main__":
