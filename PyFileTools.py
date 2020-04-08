@@ -66,6 +66,8 @@ class FileToolUI(QtWidgets.QDialog):
         head_item = self.filesList_tree_widget.headerItem()
         head_item.setSizeHint(0, QtCore.QSize(200, 25))
         head_view = self.filesList_tree_widget.header()
+        self.filesList_tree_widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy(QtCore.Qt.CustomContextMenu))
+        self.filesList_tree_widget.customContextMenuRequested.connect(self.FileListMenu)
         #간혹 파일명이랑 경로가 달라지는 경우가 있어서 임시 주석처리
         #head_view.setSectionHidden(3,True)
         head_view.resizeSection(0, 200)
@@ -104,11 +106,33 @@ class FileToolUI(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
         self.UpdateUI()
 
+    # 메뉴 행동
+    def FileListMenu(self, pos):
+        menu = QtWidgets.QMenu(self)
+        menu.addAction(u'파일삭제', self.FileDelete)
+        menu.addAction(u'모든백업삭제', self.FileAllBackUpFileDelete)
+        menu.exec_(QtGui.QCursor.pos())
+    def FileRestore(self):
+        pass
+    def FileDelete(self):
+        ''' 파일 삭제 '''
+        print(u'파일 삭제')
+        a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
+        print(str(type(a_QItemSelectionModel)))
+        index_QModelIndex = a_QItemSelectionModel.currentIndex()
+        print(str(type(index_QModelIndex)))
+        target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
+        print(str(type(target_modelIndex)))
+        maxscript_string = u'deleteFile @"{}"'.format(target_modelIndex.data())
+        print(maxscript_string)
+        MaxPlus.Core.EvalMAXScript(maxscript_string)
+        self.GetFileList()
+    def FileAllBackUpFileDelete(self):
+        pass
     # UI 업데이트
     def ReturnNameEdit(self):
         self.version_label.setText(u"Va00")
         print(u"returnNameEdit")
-
     def UpdateUI(self):
         print(u"UpdateUI")
         self.MoveBackupFile()
@@ -251,6 +275,9 @@ class FileToolUI(QtWidgets.QDialog):
         pass
     def InPutFileName(self, fileNameString):
         pass
+    def GetSelectIndex(self):
+        _QModelIndex = self.filesList_tree_widget.selectionModel.currentIndex()
+
     def LoadMaxFile(self, index_QModelIndex):
         #test_modelIndex = index_QModelIndex
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
@@ -260,7 +287,7 @@ class FileToolUI(QtWidgets.QDialog):
         print(u'item부모 %d' % index_QModelIndex.parent().row() )
 
         #run_string = "loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (self.fileSet_List[index_QModelIndex.row()].full_path)
-        run_string = u"loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (target_modelIndex.data())
+        run_string = u"loadMaxFile (@\"%s\") useFileUnits:true quiet:true" % (target_modelIndex.data())
         print(run_string)
         MaxPlus.Core.EvalMAXScript(run_string)
         self.CurrentFileUIDataUpdate()
