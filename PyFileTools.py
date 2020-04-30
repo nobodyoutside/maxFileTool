@@ -218,9 +218,7 @@ class FileToolUI(QtWidgets.QDialog):
                 number_head = test_str_list[0][1]
                 number = test_str_list[0][2:4]
                 if len(ex_text_list) > 1:
-                    for i in Range(1,len(ex_text_list)):
-                        annotation.append(u"_")
-                        annotation.append(ex_text_list[i])
+                    annotation = ex_text[6:]
             else:
                 annotation = ex_text
 
