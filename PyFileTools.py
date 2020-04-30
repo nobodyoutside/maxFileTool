@@ -193,24 +193,37 @@ class FileToolUI(QtWidgets.QDialog):
         file_fullName = RT.filenameFromPath(file_full_path_str)
         temp_list = RT.getFilenameFile(file_fullName).split(',')
         file_name = temp_list[0]
+        ex_text = u""
         file_ext = RT.getFilenameType(file_fullName)
         number_head = u"a"
         number = u"00"
         annotation = u""
         is_Version_file = False
-        if len(temp_list) > 1 :
-            split1_list = temp_list[1].split(u'_') # ㅁㅁ, Va00
-            test_str_list = split1_list[0].split()
+        is_version_text = False
+        # 스크립트에서 , 분리로 관리되는 파일인지 확인
+        if len(temp_list) > 1:
+            is_Version_file = True
+            ex_text = temp_list[1]
+        # ,문자로 나눠진 파일이면
+        if is_Version_file :
+            ex_text_list = ex_text.split(u'_') # ㅁㅁ, Va00 
+            test_str_list = ex_text_list[0].split()
+            # 버전문자가 있는지 확인
             if test_str_list[0][0] == u"V" and len(test_str_list[0]) == 4:
+                # 문자열 구조가 맞는지 확인
                 if test_str_list[0][1] in FileToolUI.alphabet_lower_list:
-                    is_Version_file = True
-            if is_Version_file:
+                    is_version_text = True
+            # 버전문자가 맞으면 해당 문자를 업데이트 하고 아니면 해당문자열을 통으로 주석 처리
+            if is_version_text:
                 number_head = test_str_list[0][1]
                 number = test_str_list[0][2:4]
+                if len(ex_text_list) > 1:
+                    for i in Range(1,len(ex_text_list)):
+                        annotation.append(u"_")
+                        annotation.append(ex_text_list[i])
             else:
-                annotation = temp_list[1]
-            if is_Version_file and len(split1_list) > 1:
-                annotation = split1_list[1]
+                annotation = ex_text
+
         return FileNameSet(file_index, file_full_path_str, file_path, file_name, file_ext, number_head, number, annotation)
     def GetCurrentFileNameSet(self):
         path_full = RT.maxfilepath + RT.maxfileName
