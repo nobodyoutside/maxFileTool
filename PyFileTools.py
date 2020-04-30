@@ -118,16 +118,14 @@ class FileToolUI(QtWidgets.QDialog):
         ''' 파일 삭제 '''
         print(u'파일 삭제')
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
-        print(str(type(a_QItemSelectionModel)))
         index_QModelIndex = a_QItemSelectionModel.currentIndex()
-        print(str(type(index_QModelIndex)))
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
-        print(str(type(target_modelIndex)))
         maxscript_string = u'deleteFile @"{}"'.format(target_modelIndex.data())
-        print(maxscript_string)
         MaxPlus.Core.EvalMAXScript(maxscript_string)
         self.GetFileList()
     def FileAllBackUpFileDelete(self):
+        a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
+        index_QModelIndex = a_QItemSelectionModel.currentIndex()
         pass
     # UI 업데이트
     def ReturnNameEdit(self):
