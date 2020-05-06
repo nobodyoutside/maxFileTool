@@ -112,7 +112,10 @@ class FileToolUI(QtWidgets.QDialog):
         menu = QtWidgets.QMenu(self)
         menu.addAction(u'파일삭제', self.FileDelete)
         menu.addAction(u'모든백업삭제', self.FileAllBackUpFileDelete)
+        menu.addAction(u'파일명 변경', self.MakeWindowReName)
         menu.exec_(QtGui.QCursor.pos())
+    def MakeWindowReName(self):
+        pass
     def FileRestore(self):
         pass
     def FileDelete(self):
