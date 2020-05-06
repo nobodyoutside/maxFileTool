@@ -31,7 +31,8 @@ class FileNameSet():
         self.full_path = self.dir +  self.name + u", V" + self.number_head + self.number_str + u'_' + self.annotation + self.extension 
     def Get_version_str(self):
         return (u"V" + self.number_head + self.number_str)
-
+class FBXSetting():
+    pass
 class FileToolUI(QtWidgets.QDialog):
     _version = 1.0
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
