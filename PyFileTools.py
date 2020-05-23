@@ -63,6 +63,7 @@ class FileToolUI(QtWidgets.QDialog):
         # ui객체
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.m_main_dir_path)
         self.filesList_tree_widget = QtWidgets.QTreeWidget()
+        self.filesList_tree_widget.setSortingEnabled(True)
         self.filesList_tree_widget.setHeaderLabels([u"파일이름", u"버전", u"설명", u"풀경로"])
         head_item = self.filesList_tree_widget.headerItem()
         head_item.setSizeHint(0, QtCore.QSize(200, 25))
