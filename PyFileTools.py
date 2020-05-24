@@ -64,6 +64,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.dirLabel = QtWidgets.QLabel(u"[대상 경로] " + self.m_main_dir_path)
         self.filesList_tree_widget = QtWidgets.QTreeWidget()
         self.filesList_tree_widget.setSortingEnabled(True)
+        self.filesList_tree_widget.setExpandsOnDoubleClick(False)
         self.filesList_tree_widget.setHeaderLabels([u"파일이름", u"버전", u"설명", u"풀경로"])
         head_item = self.filesList_tree_widget.headerItem()
         head_item.setSizeHint(0, QtCore.QSize(200, 25))
@@ -116,7 +117,12 @@ class FileToolUI(QtWidgets.QDialog):
         menu.addAction(u'파일명 변경', self.MakeWindowReName)
         menu.exec_(QtGui.QCursor.pos())
     def MakeWindowReName(self):
-        pass
+        qt_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
+        # qt_TextElideMode = qt_QItemSelectionModel.textElideMode()
+        qt_QAbstractItemDelegate = qt_QItemSelectionModel.itemDelegate()
+        qt_QAbstractItemDelegate.createEditor()
+        qt_index_QModelIndex = qt_QItemSelectionModel.currentIndex()
+        qt_QItemSelectionModel.openPersistentEditor(qt_index_QModelIndex)
     def FileRestore(self):
         pass
     def FileDelete(self):
@@ -193,6 +199,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.filesList_tree_widget.clear() 
         for file_set in self.fileSet_List:
             item = QtWidgets.QTreeWidgetItem(self.filesList_tree_widget)
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
             item.setText(0, file_set.name)
             item.setText(1, file_set.number_str )
             item.setText(2, file_set.annotation)
@@ -200,6 +207,7 @@ class FileToolUI(QtWidgets.QDialog):
             for backup_file_set in self.backup_file_set_liset:
                 if backup_file_set.name == file_set.name:
                     sub_item = QtWidgets.QTreeWidgetItem(item)
+                    sub_item.setFlags(sub_item.flags() | QtCore.Qt.ItemIsEditable)
                     sub_item.setTextColor(0,QtGui.QColor(44, 44, 44))
                     sub_item.setText(0, backup_file_set.name)
                     sub_item.setText(1, backup_file_set.number_str )
