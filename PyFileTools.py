@@ -108,6 +108,7 @@ class FileToolUI(QtWidgets.QDialog):
         # 메인 레아아웃 추가
         self.setLayout(self.main_layout)
         self.UpdateUI()
+        
 
     # 메뉴 행동
     def FileListMenu(self, pos):
@@ -146,6 +147,7 @@ class FileToolUI(QtWidgets.QDialog):
         print(u"UpdateUI")
         self.MoveBackupFile()
         self.GetFileList()
+        self.filesList_tree_widget.sortByColumn(0, QtCore.Qt.AscendingOrder)
         # 열려있는 파일 정보 업데이트
         self.CurrentFileUIDataUpdate()
     def MakeFileSetList(self, target_dir, target_extension = u"max"):
