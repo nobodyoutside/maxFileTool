@@ -1,7 +1,7 @@
 name "PyFileTools"
 version 1.00
 
-copy PyFileTools.py to $userScripts\Seo_FileTools
+copy PyFileTools.py to $userScripts\Seo\AniTools
 drop "PyFilesTool_run.mcr"
 run "PyFilesTool_run.mcr"
 
