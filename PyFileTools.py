@@ -109,7 +109,6 @@ class FileToolUI(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
         self.UpdateUI()
         
-
     # 메뉴 행동
     def FileListMenu(self, pos):
         menu = QtWidgets.QMenu(self)
@@ -265,6 +264,11 @@ class FileToolUI(QtWidgets.QDialog):
         current_file_nameSet = self.GetNewFileNameSet(-1, path_full)
         return current_file_nameSet
     # File 기능
+    def GetMaxVersion(self):
+        u''' 맥스 2018버전으로 임시 강제 저장
+        차후에 옵션으로 저장 버전을 만들어서 반환 할 것
+        '''
+        return 20000
     def SaveMaxFile(self, isVersionUp_bool = False):
         u''' 유아이 정보를 기반으로 파일을 저장
         '''
@@ -293,7 +297,8 @@ class FileToolUI(QtWidgets.QDialog):
             current_version_str = current_version_str[:2] + new_num_str
         # 저장
         save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + ", " + current_version_str + annotation_str + self.m_current_file_set.extension
-        MaxPlus.FileManager.Save(save_file_name)
+        #MaxPlus.FileManager.Save(save_file_name)
+        MaxPlus.FileManager.SaveSceneAsVersion(save_file_name, True, True, self.GetMaxVersion())
         self.UpdateUI()
     def ExportFBX(self, fileName):
         pass
