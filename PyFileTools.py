@@ -296,7 +296,7 @@ class FileToolUI(QtWidgets.QDialog):
                 new_num_str = u"0" + new_num_str
             current_version_str = current_version_str[:2] + new_num_str
         # 저장
-        save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + ", " + current_version_str + annotation_str + self.m_current_file_set.extension
+        save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + u", " + current_version_str + annotation_str + self.m_current_file_set.extension
         #MaxPlus.FileManager.Save(save_file_name)
         MaxPlus.FileManager.SaveSceneAsVersion(save_file_name, True, True, self.GetMaxVersion())
         self.UpdateUI()
