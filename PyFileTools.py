@@ -38,12 +38,15 @@ class FileToolUI(QtWidgets.QDialog):
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
     _annotation_default_str = u"주석"
     _backup_dir_name = u'_bak\\'
+    _isCurrentFolder_backupFolder = False
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(FileToolUI, self).__init__(parent)
         RT.clearlistener()
         self.m_main_dir_path = RT.getFilenamePath(RT.maxfilepath)
         self.m_backup_dir_path = self.m_main_dir_path + FileToolUI._backup_dir_name
         self.m_current_MaxFilePath = RT.getFilenamePath(RT.maxfilepath)
+        if self.m_current_MaxFilePath.endswith("_bak\\"):
+            self._isCurrentFolder_backupFolder = True
         self.m_current_maxfile_name = RT.getFilenameFile(RT.maxFileName).split(',')[0]
         self.m_current_file_set = self.GetCurrentFileNameSet()
         self.fileSet_List = []
@@ -180,16 +183,17 @@ class FileToolUI(QtWidgets.QDialog):
             del unique_file_set_collection
         ## 파일 이동
         #MaxPlus.Core.EvalMAXScript(u'makeDir back_dir')
-        RT.execute(u'makeDir @\"{}\"'.format(self.m_backup_dir_path))
-        for file_collection in self.unique_file_set_collection_list:
-            if len(file_collection) > 1:
-                for file_set in file_collection[:-1]:
-                    print(file_set.full_path)
-                    if file_set.number_str == u"":
-                        continue
-                    new_full_path = u"{0}{1}, V{2}{3}_{4}{5}".format(self.m_backup_dir_path, file_set.name, file_set.number_head, file_set.number_str, file_set.annotation, file_set.extension)
-                    #new_full_path = self.m_backup_dir_path +  file_set.name + ", V" + file_set.number_head + file_set.number_str + '_' + file_set.annotation + file_set.extension 
-                    RT.execute(u'renameFile @\"{0}\" @\"{1}\"'.format(file_set.full_path, new_full_path ))
+        if not self._isCurrentFolder_backupFolder:
+            RT.execute(u'makeDir @\"{}\"'.format(self.m_backup_dir_path))
+            for file_collection in self.unique_file_set_collection_list:
+                if len(file_collection) > 1:
+                    for file_set in file_collection[:-1]:
+                        print(file_set.full_path)
+                        if file_set.number_str == u"":
+                            continue
+                        new_full_path = u"{0}{1}, V{2}{3}_{4}{5}".format(self.m_backup_dir_path, file_set.name, file_set.number_head, file_set.number_str, file_set.annotation, file_set.extension)
+                        #new_full_path = self.m_backup_dir_path +  file_set.name + ", V" + file_set.number_head + file_set.number_str + '_' + file_set.annotation + file_set.extension 
+                        RT.execute(u'renameFile @\"{0}\" @\"{1}\"'.format(file_set.full_path, new_full_path ))
         # 리스트 재정리
         ## 현제경로 파일 수집
         self.fileSet_List = self.MakeFileSetList(self.m_current_MaxFilePath)
