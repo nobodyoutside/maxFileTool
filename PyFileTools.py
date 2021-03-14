@@ -33,6 +33,40 @@ class FileNameSet():
         return (u"V" + self.number_head + self.number_str)
 class FBXSetting():
     pass
+class ChangeFileNameUI(QtWidgets.QDialog):
+    _input_file_nameSet = None
+    _set_file_name = u''
+    def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
+        super(ChangeFileNameUI, self).__init__(parent)
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.input_qlineedit = QtWidgets.QLineEdit()
+        self.main_layout.addWidget(self.input_qlineedit)
+        self.rename_btn = QtWidgets.QPushButton(u'변경 실행', default = True, autoDefault = True)
+        self.main_layout.addWidget(self.rename_btn)
+        self.rename_btn.clicked.connect(self.renameFiles)
+        print('init')
+        self.setLayout(self.main_layout)
+        self.setWindowTitle(u'이름 수정')
+    def getCurrentFileData(self, file_name_set):
+        self._input_file_nameSet = file_name_set
+        self.input_qlineedit.setText(file_name_set.name)
+    def renameFiles(self):
+        # 조건체크
+        print(self._input_file_nameSet.name)
+        print(self.input_qlineedit.text()) 
+        # if self._input_file_nameSet.name == self.input_qlineedit.text():
+        #     return False
+        # 작업폴더 파일 수집
+        maxfiles = RT.GetFiles(self._input_file_nameSet.dir + u"\\" + self._input_file_nameSet.name + u"*.max")
+        # test
+        for file_path in maxfiles:
+            print(file_path)
+        # 백업 파일 수집
+        max_backup_files = RT.GetFiles(self._input_file_nameSet.dir + u"\\_bak\\" + self._input_file_nameSet.name + u"*.max")
+        for file_path in max_backup_files:
+            print(file_path)
+        # 작업폴더 파일을 백업으로 보내고
+        # 
 class FileToolUI(QtWidgets.QDialog):
     _version = 1.0
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
@@ -120,12 +154,17 @@ class FileToolUI(QtWidgets.QDialog):
         menu.addAction(u'파일명 변경', self.MakeWindowReName)
         menu.exec_(QtGui.QCursor.pos())
     def MakeWindowReName(self):
-        qt_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
-        # qt_TextElideMode = qt_QItemSelectionModel.textElideMode()
-        qt_QAbstractItemDelegate = qt_QItemSelectionModel.itemDelegate()
-        qt_QAbstractItemDelegate.createEditor()
-        qt_index_QModelIndex = qt_QItemSelectionModel.currentIndex()
-        qt_QItemSelectionModel.openPersistentEditor(qt_index_QModelIndex)
+        '''모든 파일명을 수정'''
+        a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
+        index_QModelIndex = a_QItemSelectionModel.currentIndex()
+        target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
+        current_file_nameSet = self.GetNewFileNameSet(-1, target_modelIndex.data())
+        print('aa')
+        input_eidt_qdialog = ChangeFileNameUI()
+        input_eidt_qdialog.getCurrentFileData(current_file_nameSet)
+        print('133')
+        input_eidt_qdialog.show()
+        print('bb')
     def FileRestore(self):
         pass
     def FileDelete(self):

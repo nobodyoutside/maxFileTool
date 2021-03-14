@@ -23,7 +23,8 @@
                 "reveal": "silent",
                 "focus": false,
                 "panel": "shared"
-            }
+            },
+            "problemMatcher": []
         }
     ]
 }
