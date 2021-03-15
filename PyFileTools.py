@@ -1,6 +1,6 @@
 import MaxPlus
 import pymxs
-#import os
+import os
 from PySide2 import QtWidgets, QtCore, QtGui
 
 RT = pymxs.runtime
@@ -51,22 +51,33 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         self._input_file_nameSet = file_name_set
         self.input_qlineedit.setText(file_name_set.name)
     def renameFiles(self):
+        ''' 파일명 수정 '''
         # 조건체크
-        print(self._input_file_nameSet.name)
-        print(self.input_qlineedit.text()) 
-        # if self._input_file_nameSet.name == self.input_qlineedit.text():
-        #     return False
+        file_name_src_text =  self._input_file_nameSet.name
+        file_rename_text = self.input_qlineedit.text()
+        dir_path = self._input_file_nameSet.dir
+        # print(file_name_src_text)
+        # print(file_rename_text) 
+        if file_name_src_text == file_rename_text:
+            return False
         # 작업폴더 파일 수집
-        maxfiles = RT.GetFiles(self._input_file_nameSet.dir + u"\\" + self._input_file_nameSet.name + u"*.max")
+        maxfiles = RT.GetFiles(dir_path + u"\\" + file_name_src_text + u"*.max")
         # test
         for file_path in maxfiles:
-            print(file_path)
+            # print(file_path)
+            new_path = file_path.replace(file_name_src_text, file_rename_text )
+            os.rename(file_path, new_path)
         # 백업 파일 수집
-        max_backup_files = RT.GetFiles(self._input_file_nameSet.dir + u"\\_bak\\" + self._input_file_nameSet.name + u"*.max")
-        for file_path in max_backup_files:
-            print(file_path)
+        max_backup_files = RT.GetFiles(dir_path + u"\\_bak\\" + file_name_src_text + u"*.max")
         # 작업폴더 파일을 백업으로 보내고
-        # 
+        # print(u'파일명 변경')
+        for file_path in max_backup_files:
+            new_path = file_path.replace(file_name_src_text, file_rename_text )
+            os.rename(file_path, new_path)
+        global ui
+        ui = FileToolUI()
+        ui.show()
+        self.close()
 class FileToolUI(QtWidgets.QDialog):
     _version = 1.0
     alphabet_lower_list = [u'a',u'b',u'c',u'd',u'e',u'f',u'g',u'h',u'i',u'j',u'k',u'l',u'm',u'n',u'o',u'p',u'q',u'r',u's',u't',u'u',u'v',u'w',u'x',u'y',u'z']
@@ -159,12 +170,15 @@ class FileToolUI(QtWidgets.QDialog):
         index_QModelIndex = a_QItemSelectionModel.currentIndex()
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
         current_file_nameSet = self.GetNewFileNameSet(-1, target_modelIndex.data())
-        print('aa')
+        # 작업 파일이 날아가는 실수를 방지하기 위해서 수정하는 파일과 현 맥스 파일이름이 같은 경우 저장을 한다.
+        if self.maxFileNameEdit.text() == current_file_nameSet.name:
+            MaxPlus.FileManager.Save()
         input_eidt_qdialog = ChangeFileNameUI()
         input_eidt_qdialog.getCurrentFileData(current_file_nameSet)
-        print('133')
         input_eidt_qdialog.show()
-        print('bb')
+        self.close()
+        # print(u'파일명 수정')
+
     def FileRestore(self):
         pass
     def FileDelete(self):
