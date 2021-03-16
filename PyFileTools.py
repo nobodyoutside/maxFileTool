@@ -8,6 +8,8 @@ RT = pymxs.runtime
 # max파일 섬네일
 # max파일 프리뷰
 # fbx 익스포트
+# 
+FileToolUI_var_str = u'20210316_백업기능추가'
 print(u"hellow max python")
 class FileNameSet():
     u''' ui및 파일 정보를 관리할 데이터셋
@@ -22,12 +24,19 @@ class FileNameSet():
         self.number_str = num
         self.annotation = annotation
     def Set_version_number_up(self):
+        # print(u'debug: Set_version_number_up in')
+        # print(u'debug: number_str는' + self.number_str)
         if len(self.number_str) == 0:
+            # print(u'debug: number_str 가 없어서 0으로 초기화')
             self.number_str = 0
-        new_number = int(self.number_str)+1
-        if len(new_number) < 2:
-            new_number = u'0'+ str(new_number)
-        self.number_str = str(new_number) 
+        int_converter = int(self.number_str)
+        # print(u'debug: int로 변환')
+        new_number = int_converter + 1
+        # print(u'debug: ' + self.number_str + u' 에 + 1함')
+        self.number_str = str(new_number)
+        if len(self.number_str) < 2:
+            self.number_str = u'0'+ self.number_str
+        # print(u'debug: number_str 를' + str(new_number) + u'으로 설정함')
         self.full_path = self.dir +  self.name + u", V" + self.number_head + self.number_str + u'_' + self.annotation + self.extension 
     def Get_version_str(self):
         return (u"V" + self.number_head + self.number_str)
@@ -44,14 +53,14 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         self.rename_btn = QtWidgets.QPushButton(u'변경 실행', default = True, autoDefault = True)
         self.main_layout.addWidget(self.rename_btn)
         self.rename_btn.clicked.connect(self.renameFiles)
-        print('init')
+        # print('init')
         self.setLayout(self.main_layout)
         self.setWindowTitle(u'이름 수정')
     def getCurrentFileData(self, file_name_set):
         self._input_file_nameSet = file_name_set
         self.input_qlineedit.setText(file_name_set.name)
     def renameFiles(self):
-        ''' 파일명 수정 '''
+        u''' 파일명 수정 '''
         # 조건체크
         file_name_src_text =  self._input_file_nameSet.name
         file_rename_text = self.input_qlineedit.text()
@@ -95,7 +104,7 @@ class FileToolUI(QtWidgets.QDialog):
         self.m_current_maxfile_name = RT.getFilenameFile(RT.maxFileName).split(',')[0]
         self.m_current_file_set = self.GetCurrentFileNameSet()
         self.fileSet_List = []
-        self.setWindowTitle(u"파일툴")
+        self.setWindowTitle(u"파일툴 - " + FileToolUI_var_str)
         self.initUI()
 
     def initUI(self):
@@ -132,6 +141,8 @@ class FileToolUI(QtWidgets.QDialog):
         self.savePlueMaxBtn = QtWidgets.QPushButton(u"버전업 저장", default = False, autoDefault = True)
         self.saveFbxBtn = QtWidgets.QPushButton(u"fbx로 저장", default = False, autoDefault = False)
         self.openFolder = QtWidgets.QPushButton(u"경로 열기", default = False, autoDefault = False)
+        # 로그창
+        self.state_bar_qlabel = QtWidgets.QLabel(u"대기중")
         # 파일리스트 위젯추가
         self.maxfile_list_layout.addWidget(self.dirLabel)
         self.maxfile_list_layout.addWidget(self.filesList_tree_widget)
@@ -144,6 +155,8 @@ class FileToolUI(QtWidgets.QDialog):
         self.button_layout.addWidget(self.savePlueMaxBtn)
         self.button_layout.addWidget(self.saveFbxBtn)
         self.button_layout.addWidget(self.openFolder)
+        # 정보창
+        self.main_layout.addWidget(self.state_bar_qlabel)
         # 연결
         self.saveMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = False))
         self.savePlueMaxBtn.clicked.connect(lambda : self.SaveMaxFile(isVersionUp_bool = True))
@@ -160,12 +173,13 @@ class FileToolUI(QtWidgets.QDialog):
     # 메뉴 행동
     def FileListMenu(self, pos):
         menu = QtWidgets.QMenu(self)
+        menu.addAction(u'이 파일로 복구', self.FileRestore)
         menu.addAction(u'파일삭제', self.FileDelete)
         menu.addAction(u'모든백업삭제', self.FileAllBackUpFileDelete)
         menu.addAction(u'파일명 변경', self.MakeWindowReName)
         menu.exec_(QtGui.QCursor.pos())
     def MakeWindowReName(self):
-        '''모든 파일명을 수정'''
+        u'''모든 파일명을 수정'''
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
         index_QModelIndex = a_QItemSelectionModel.currentIndex()
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
@@ -180,10 +194,51 @@ class FileToolUI(QtWidgets.QDialog):
         # print(u'파일명 수정')
 
     def FileRestore(self):
-        pass
+        u'''해당 파일을 최신작업 파일로 복구한다'''
+        a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
+        index_QModelIndex = a_QItemSelectionModel.currentIndex()
+        target_name_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),0)
+        get_current_working_file  = RT.GetFiles(self.m_main_dir_path + u"\\" + target_name_modelIndex.data() + u"*.max")
+        maxfile_list = []
+        file_number = 0
+        for max_file in get_current_working_file:
+            print (max_file)
+            file_number += 1
+            maxfile_list.append(self.GetNewFileNameSet(file_number, max_file))
+        # print(u'debug: 최대버전찾기')
+        target_ver = -1
+        for name_set in maxfile_list:
+            print(name_set.full_path)
+            this_number = int(name_set.number_str)
+            if target_ver < this_number:
+                target_ver = this_number
+        target_fullpath_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
+        old_full_path = target_fullpath_modelIndex.data()
+        # print(u'debug: 복구될 파일 : ' +old_full_path)
+        restore_nameset = self.GetNewFileNameSet(-1, old_full_path)
+        # 작업 경로의 파일은 복구 작업을 하지 않기 위해서
+        # print(u'debug: 복구될 경로 : ' + restore_nameset.dir)
+        # print(u'debug: 작업 경로 : ' + self.m_main_dir_path)
+        if restore_nameset.dir == self.m_main_dir_path:
+            self.state_bar_qlabel.setText(u'해당 파일은 최신 파일이라 복구 되지 않습니다.')
+            return False
+        restore_nameset.dir = self.m_main_dir_path
+        target_nuber_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),1)
+        old_number = target_nuber_modelIndex.data()
+        # print(u'debug: 이전 번호 : ' + old_number)
+        restore_nameset.annotation = u"파일 복구_" + restore_nameset.Get_version_str()
+        print(restore_nameset.annotation)
+        restore_nameset.number_str = str(target_ver)
+        restore_nameset.Set_version_number_up()
+        # print(u'debug: ' + old_full_path)
+        # print(u'debug: ' + restore_nameset.full_path)
+        if restore_nameset.name == self.maxFileNameEdit.text():
+            self.SaveMaxFile()
+        os.rename(old_full_path, restore_nameset.full_path)
+        self.UpdateUI()
     def FileDelete(self):
-        ''' 파일 삭제 '''
-        print(u'파일 삭제')
+        u''' 파일 삭제 '''
+        # print(u'debug: 파일 삭제')
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
         index_QModelIndex = a_QItemSelectionModel.currentIndex()
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
@@ -197,9 +252,9 @@ class FileToolUI(QtWidgets.QDialog):
     # UI 업데이트
     def ReturnNameEdit(self):
         self.version_label.setText(u"Va00")
-        print(u"returnNameEdit")
+        print(u"debug: returnNameEdit")
     def UpdateUI(self):
-        print(u"UpdateUI")
+        print(u"debug: UpdateUI")
         self.MoveBackupFile()
         self.GetFileList()
         self.filesList_tree_widget.sortByColumn(0, QtCore.Qt.AscendingOrder)
