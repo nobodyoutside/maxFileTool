@@ -9,7 +9,8 @@ RT = pymxs.runtime
 # max파일 프리뷰
 # fbx 익스포트
 # 
-FileToolUI_var_str = u'20210316_백업기능추가'
+# FileToolUI_var_str = u'20210316_백업기능추가'
+FileToolUI_var_str = u'20210317_파일삭제 확인창'
 print(u"hellow max python")
 class FileNameSet():
     u''' ui및 파일 정보를 관리할 데이터셋
@@ -175,7 +176,7 @@ class FileToolUI(QtWidgets.QDialog):
         menu = QtWidgets.QMenu(self)
         menu.addAction(u'이 파일로 복구', self.FileRestore)
         menu.addAction(u'파일삭제', self.FileDelete)
-        menu.addAction(u'모든백업삭제', self.FileAllBackUpFileDelete)
+        # menu.addAction(u'모든백업삭제', self.FileAllBackUpFileDelete)
         menu.addAction(u'파일명 변경', self.MakeWindowReName)
         menu.exec_(QtGui.QCursor.pos())
     def MakeWindowReName(self):
@@ -238,12 +239,27 @@ class FileToolUI(QtWidgets.QDialog):
         self.UpdateUI()
     def FileDelete(self):
         u''' 파일 삭제 '''
+        start_setText = self.state_bar_qlabel.setText
+        add_two_str = u'{} {}'.format
+        qBox = QtWidgets.QMessageBox
         # print(u'debug: 파일 삭제')
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
         index_QModelIndex = a_QItemSelectionModel.currentIndex()
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
-        maxscript_string = u'deleteFile @"{}"'.format(target_modelIndex.data())
-        MaxPlus.Core.EvalMAXScript(maxscript_string)
+        # 경고창
+        #QtWidgets.QMessageBox.question(self, "파일삭제", "question_str")
+        yes_nod_buttons = qBox.Yes
+        yes_nod_buttons |= qBox.No
+        delete_file_full_path_str = target_modelIndex.data()
+        delete_file_name_str = RT.filenameFromPath(delete_file_full_path_str)
+        question_str = add_two_str(delete_file_name_str, u" 파일을 삭제 하시겠습니다.")
+        response_StandardButton = qBox.question(self, u"파일삭제", question_str, yes_nod_buttons, qBox.No)
+        if response_StandardButton == qBox.Yes:
+            maxscript_string = u'deleteFile @"{}"'.format(delete_file_full_path_str)
+            MaxPlus.Core.EvalMAXScript(maxscript_string)
+            start_setText(add_two_str(delete_file_name_str, u'을 삭제 하였습니다.'))
+        else:
+            start_setText(u'삭제 취소')
         self.GetFileList()
     def FileAllBackUpFileDelete(self):
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
