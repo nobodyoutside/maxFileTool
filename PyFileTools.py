@@ -1,5 +1,5 @@
 import MaxPlus
-import pymxs
+import pymxs # pylint: disable=import-error
 import os
 from PySide2 import QtWidgets, QtCore, QtGui
 
@@ -11,16 +11,20 @@ RT = pymxs.runtime
 # 
 # FileToolUI_var_str = u'20210316_백업기능추가'
 # FileToolUI_var_str = u'20210317_파일삭제 확인창'
-FileToolUI_var_str = u'20210317_2선택예외처리'
+# FileToolUI_var_str = u'20210317_2선택예외처리'
+# 2021-07-30 16:34:25 LoadMaxFile 버그
+# FileToolUI_var_str = u'2021-07-30'
+FileToolUI_var_str = u'2022-01-15 : 파일명 변경 #18'
 print(u"hellow max python")
 class FileNameSet():
     u''' ui및 파일 정보를 관리할 데이터셋
     '''
-    def __init__(self,file_index, path_full, path_dir, file_name, ext, num_head = u"a", num = u"", annotation = u""):
+    def __init__(self,file_index = 0, path_full = u"", path_dir = u"", file_name = u"", ext = u".max", num_head = u"a", num = u"00", annotation = u""):
         self.index = file_index
-        self.full_path = path_full
-        self.dir = path_dir
-        self.name = file_name
+        self.full_path = path_full # @"F:\21_3dMaxScript\_TestMaxFile\test1, Va00.max"
+        self.dir = path_dir # 
+        self.name = file_name # name
+        self.file_name = u""
         self.extension = ext
         self.number_head = num_head
         self.number_str = num
@@ -39,16 +43,28 @@ class FileNameSet():
         if len(self.number_str) < 2:
             self.number_str = u'0'+ self.number_str
         # print(u'debug: number_str 를' + str(new_number) + u'으로 설정함')
-        self.full_path = self.dir +  self.name + u", V" + self.number_head + self.number_str + u'_' + self.annotation + self.extension 
+        self.update()
     def Get_version_str(self):
         return (u"V" + self.number_head + self.number_str)
+    # def change_file_name(self, change_name):
+    #     self.name = change_name
+    #     self.update()
+    def update(self):
+        underbar = "_"
+        if not self.annotation:
+            underbar = u""
+        file_name = u"{}, V{}{}{}{}".format(self.name, self.number_head, self.number_str, underbar, self.annotation)
+        self.file_name = file_name
+        self.full_path = u"{}{}{}".format(self.dir, file_name, self.extension)
 class FBXSetting():
     pass
 class ChangeFileNameUI(QtWidgets.QDialog):
-    _input_file_nameSet = None
-    _set_file_name = u''
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(ChangeFileNameUI, self).__init__(parent)
+        #
+        self._input_file_nameSet = FileNameSet()
+        self._set_file_name = u''
+        #
         self.main_layout = QtWidgets.QVBoxLayout()
         self.input_qlineedit = QtWidgets.QLineEdit()
         self.main_layout.addWidget(self.input_qlineedit)
@@ -59,6 +75,10 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
         self.setWindowTitle(u'이름 수정')
     def getCurrentFileData(self, file_name_set):
+        '''
+            기본으로 설정할  파일명 이름을 주는 것
+            생성후 처음에 실행해줘서 기본이름을 찾을 수 있음.
+        '''
         self._input_file_nameSet = file_name_set
         self.input_qlineedit.setText(file_name_set.name)
     def closeEvent(self, event):
@@ -66,26 +86,31 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         if event:
             ui = FileToolUI()
             ui.show()
-
     def renameFiles(self):
         u''' 파일명 수정 '''
         # 조건체크
-        file_name_src_text =  self._input_file_nameSet.name
+        input_name_set = self._input_file_nameSet
+        # file_name_src_text =  input_name_set.name
+        input_name_set.update() # file_name 안전장치용
+        file_name_src_text =  input_name_set.file_name
         file_rename_text = self.input_qlineedit.text()
-        dir_path = self._input_file_nameSet.dir
-        # print(file_name_src_text)
-        # print(file_rename_text) 
+        dir_path = input_name_set.dir
+        print(file_name_src_text)
+        print(file_rename_text) 
         if file_name_src_text == file_rename_text:
+            print('파일명이 같습니다.')
             return False
         # 작업폴더 파일 수집
         maxfiles = RT.GetFiles(dir_path + u"\\" + file_name_src_text + u"*.max")
+        # print('renameFiles : ' + input_name_set.full_path)
+        # maxfiles = RT.GetFiles(dir_path + u"\\" + input_name_set.file_name + u".max")
         # test
         for file_path in maxfiles:
             # print(file_path)
             new_path = file_path.replace(file_name_src_text, file_rename_text )
             os.rename(file_path, new_path)
         # 백업 파일 수집
-        max_backup_files = RT.GetFiles(dir_path + u"\\_bak\\" + file_name_src_text + u"*.max")
+        max_backup_files = RT.GetFiles(dir_path + u"\\_bak\\" + input_name_set.name + u", V*.max")
         # 작업폴더 파일을 백업으로 보내고
         # print(u'파일명 변경')
         for file_path in max_backup_files:
@@ -104,6 +129,7 @@ class FileToolUI(QtWidgets.QDialog):
     def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
         super(FileToolUI, self).__init__(parent)
         RT.clearlistener()
+        # print("FileToolUI __init__")
         self.m_main_dir_path = RT.getFilenamePath(RT.maxfilepath)
         self.m_backup_dir_path = self.m_main_dir_path + FileToolUI._backup_dir_name
         self.m_current_MaxFilePath = RT.getFilenamePath(RT.maxfilepath)
@@ -456,6 +482,7 @@ class FileToolUI(QtWidgets.QDialog):
 
     def LoadMaxFile(self, index_QModelIndex):
         #test_modelIndex = index_QModelIndex
+        run_string = ""
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
         print(u'맥스파일 열기 %s' % str((target_modelIndex.row())) )
         print(u'맥스파일 열기2 %s' % str(target_modelIndex.column()) )
