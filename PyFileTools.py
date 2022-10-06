@@ -1,5 +1,5 @@
-import MaxPlus
-import pymxs # pylint: disable=import-error
+#import MaxPlus
+import pymxs 
 import os
 from PySide2 import QtWidgets, QtCore, QtGui
 
@@ -14,7 +14,8 @@ RT = pymxs.runtime
 # FileToolUI_var_str = u'20210317_2선택예외처리'
 # 2021-07-30 16:34:25 LoadMaxFile 버그
 # FileToolUI_var_str = u'2021-07-30'
-FileToolUI_var_str = u'2022-01-15 : 파일명 변경 #18'
+# FileToolUI_var_str = u'2022-01-15 : 파일명 변경 #18'
+FileToolUI_var_str = u'2022-10-06 : 2023버전'
 print(u"hellow max python")
 class FileNameSet():
     u''' ui및 파일 정보를 관리할 데이터셋
@@ -59,7 +60,7 @@ class FileNameSet():
 class FBXSetting():
     pass
 class ChangeFileNameUI(QtWidgets.QDialog):
-    def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
+    def __init__(self, parent = QtWidgets.QWidget.find(RT.windows.getMAXHWND())):
         super(ChangeFileNameUI, self).__init__(parent)
         #
         self._input_file_nameSet = FileNameSet()
@@ -126,7 +127,7 @@ class FileToolUI(QtWidgets.QDialog):
     _annotation_default_str = u"주석"
     _backup_dir_name = u'_bak\\'
     _isCurrentFolder_backupFolder = False
-    def __init__(self, parent=MaxPlus.GetQMaxMainWindow()):
+    def __init__(self, parent = QtWidgets.QWidget.find(RT.windows.getMAXHWND())):
         super(FileToolUI, self).__init__(parent)
         RT.clearlistener()
         # print("FileToolUI __init__")
@@ -224,7 +225,7 @@ class FileToolUI(QtWidgets.QDialog):
         current_file_nameSet = self.GetNewFileNameSet(-1, target_modelIndex.data())
         # 작업 파일이 날아가는 실수를 방지하기 위해서 수정하는 파일과 현 맥스 파일이름이 같은 경우 저장을 한다.
         if self.maxFileNameEdit.text() == current_file_nameSet.name:
-            MaxPlus.FileManager.Save()
+            RT.saveMaxFile(RT.maxFilePath, useNewFile = True)
         input_eidt_qdialog = ChangeFileNameUI()
         input_eidt_qdialog.getCurrentFileData(current_file_nameSet)
         input_eidt_qdialog.show()
@@ -301,7 +302,8 @@ class FileToolUI(QtWidgets.QDialog):
         response_StandardButton = qBox.question(self, u"파일삭제", question_str, yes_nod_buttons, qBox.No)
         if response_StandardButton == qBox.Yes:
             maxscript_string = u'deleteFile @"{}"'.format(delete_file_full_path_str)
-            MaxPlus.Core.EvalMAXScript(maxscript_string)
+            # MaxPlus.Core.EvalMAXScript(maxscript_string)
+            RT.execute(maxscript_string)
             start_setText(add_two_str(delete_file_name_str, u'을 삭제 하였습니다.'))
         else:
             start_setText(u'삭제 취소')
@@ -471,7 +473,8 @@ class FileToolUI(QtWidgets.QDialog):
         # 저장
         save_file_name = self.m_current_MaxFilePath +  self.maxFileNameEdit.text() + u", " + current_version_str + annotation_str + self.m_current_file_set.extension
         #MaxPlus.FileManager.Save(save_file_name)
-        MaxPlus.FileManager.SaveSceneAsVersion(save_file_name, True, True, self.GetMaxVersion())
+        # MaxPlus.FileManager.SaveSceneAsVersion(save_file_name, True, True, self.GetMaxVersion())
+        RT.saveMaxFile(save_file_name, saveAsVersion = self.GetMaxVersion(), useNewFile = True, quit = True)
         self.UpdateUI()
     def ExportFBX(self, fileName):
         pass
@@ -492,7 +495,8 @@ class FileToolUI(QtWidgets.QDialog):
         #run_string = "loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (self.fileSet_List[index_QModelIndex.row()].full_path)
         run_string = u"loadMaxFile (@\"%s\") useFileUnits:true quiet:true" % (target_modelIndex.data())
         print(run_string)
-        MaxPlus.Core.EvalMAXScript(run_string)
+        # MaxPlus.Core.EvalMAXScript(run_string)
+        RT.execute(run_string)
         self.CurrentFileUIDataUpdate()
     def OpenDirCurrentFile(self):
         RT.ShellLaunch(self.m_current_MaxFilePath, "")
@@ -509,7 +513,8 @@ class FileToolUI(QtWidgets.QDialog):
         delect_file_list = []
         for file_path in delect_file_list:
             maxscript_string = u"deleteFile {}".format(file_path)
-            MaxPlus.Core.EvalMAXScript(maxscript_string)
+            # MaxPlus.Core.EvalMAXScript(maxscript_string)
+            RT.execute(maxscript_string)
         pass
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음. 
 #if __name__ == "__main__":
