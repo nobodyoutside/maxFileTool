@@ -1,8 +1,10 @@
-#import MaxPlus
+import logging
 import pymxs
 import os
 from PySide2 import QtWidgets, QtCore, QtGui
 
+
+_logger = logging.getLogger(__name__)
 RT = pymxs.runtime
 # max열기
 # max파일 섬네일
@@ -18,7 +20,7 @@ RT = pymxs.runtime
 # FileToolUI_var_str = u'2022-10-06 : 2023버전'
 FileToolUI_var_str = '2025-08-05 : 2024버전'
 
-print("hellow max python")
+_logger.info("hellow max python")
 class FileNameSet():
     u''' ui및 파일 정보를 관리할 데이터셋
     '''
@@ -37,19 +39,19 @@ class FileNameSet():
         self.annotation = annotation
 
     def Set_version_number_up(self):
-        # print(u'debug: Set_version_number_up in')
-        # print(u'debug: number_str는' + self.number_str)
+        # _logger.info(u'debug: Set_version_number_up in')
+        # _logger.info(u'debug: number_str는' + self.number_str)
         if len(self.number_str) == 0:
-            # print(u'debug: number_str 가 없어서 0으로 초기화')
+            # _logger.info(u'debug: number_str 가 없어서 0으로 초기화')
             self.number_str = 0
         int_converter = int(self.number_str)
-        # print(u'debug: int로 변환')
+        # _logger.info(u'debug: int로 변환')
         new_number = int_converter + 1
-        # print(u'debug: ' + self.number_str + u' 에 + 1함')
+        # _logger.info(u'debug: ' + self.number_str + u' 에 + 1함')
         self.number_str = str(new_number)
         if len(self.number_str) < 2:
             self.number_str = '0'+ self.number_str
-        # print(u'debug: number_str 를' + str(new_number) + u'으로 설정함')
+        # _logger.info(u'debug: number_str 를' + str(new_number) + u'으로 설정함')
         self.update()
     def Get_version_str(self):
         return("V" + self.number_head + self.number_str)
@@ -85,7 +87,7 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         self.rename_btn = QtWidgets.QPushButton('변경 실행', default = True, autoDefault = True)
         self.main_layout.addWidget(self.rename_btn)
         self.rename_btn.clicked.connect(self.renameFiles)
-        # print('init')
+        # _logger.info('init')
         self.setLayout(self.main_layout)
         self.setWindowTitle('이름 수정')
 
@@ -112,25 +114,25 @@ class ChangeFileNameUI(QtWidgets.QDialog):
         file_name_src_text =  input_name_set.file_name
         file_rename_text = self.input_qlineedit.text()
         dir_path = input_name_set.dir
-        print(file_name_src_text)
-        print(file_rename_text)
+        _logger.info(file_name_src_text)
+        _logger.info(file_rename_text)
         if file_name_src_text == file_rename_text:
-            print('파일명이 같습니다.')
+            _logger.info('파일명이 같습니다.')
             return False
         # 작업폴더 파일 수집
         maxfiles = RT.GetFiles(
             dir_path + u"\\" + file_name_src_text + u"*.max")
-        # print('renameFiles : ' + input_name_set.full_path)
+        # _logger.info('renameFiles : ' + input_name_set.full_path)
         # maxfiles = RT.GetFiles(dir_path + u"\\" + input_name_set.file_name + u".max")
         # test
         for file_path in maxfiles:
-            # print(file_path)
+            # _logger.info(file_path)
             new_path = file_path.replace(file_name_src_text, file_rename_text)
             os.rename(file_path, new_path)
         # 백업 파일 수집
         max_backup_files = RT.GetFiles(dir_path + u"\\_bak\\" + input_name_set.name + u", V*.max")
         # 작업폴더 파일을 백업으로 보내고
-        # print(u'파일명 변경')
+        # _logger.info(u'파일명 변경')
         for file_path in max_backup_files:
             new_path = file_path.replace(file_name_src_text, file_rename_text)
             os.rename(file_path, new_path)
@@ -149,7 +151,7 @@ class FileToolUI(QtWidgets.QDialog):
     def __init__(self, parent = QtWidgets.QWidget.find(RT.windows.getMAXHWND())):
         super(FileToolUI, self).__init__(parent)
         RT.clearlistener()
-        # print("FileToolUI __init__")
+        # _logger.info("FileToolUI __init__")
         self.m_main_dir_path = RT.getFilenamePath(RT.maxfilepath)
         self.m_backup_dir_path = self.m_main_dir_path + FileToolUI._backup_dir_name
         self.m_current_MaxFilePath = RT.getFilenamePath(RT.maxfilepath)
@@ -256,7 +258,7 @@ class FileToolUI(QtWidgets.QDialog):
         input_eidt_qdialog.getCurrentFileData(current_file_nameSet)
         input_eidt_qdialog.show()
         self.close()
-        # print(u'파일명 수정')
+        # _logger.info(u'파일명 수정')
 
     def FileRestore(self):
         u'''해당 파일을 최신작업 파일로 복구한다'''
@@ -272,24 +274,24 @@ class FileToolUI(QtWidgets.QDialog):
         maxfile_list = []
         file_number = 0
         for max_file in get_current_working_file:
-            print (max_file)
+            _logger.info (max_file)
             file_number += 1
             maxfile_list.append(self.GetNewFileNameSet(file_number, max_file))
-        # print(u'debug: 최대버전찾기')
+        # _logger.info(u'debug: 최대버전찾기')
         target_ver = -1
         for name_set in maxfile_list:
-            print(name_set.full_path)
+            _logger.info(name_set.full_path)
             this_number = int(name_set.number_str)
             if target_ver < this_number:
                 target_ver = this_number
         target_fullpath_modelIndex = index_QModelIndex.sibling(
             index_QModelIndex.row(),3)
         old_full_path = target_fullpath_modelIndex.data()
-        # print(u'debug: 복구될 파일 : ' +old_full_path)
+        # _logger.info(u'debug: 복구될 파일 : ' +old_full_path)
         restore_nameset = self.GetNewFileNameSet(-1, old_full_path)
         # 작업 경로의 파일은 복구 작업을 하지 않기 위해서
-        # print(u'debug: 복구될 경로 : ' + restore_nameset.dir)
-        # print(u'debug: 작업 경로 : ' + self.m_main_dir_path)
+        # _logger.info(u'debug: 복구될 경로 : ' + restore_nameset.dir)
+        # _logger.info(u'debug: 작업 경로 : ' + self.m_main_dir_path)
         if restore_nameset.dir == self.m_main_dir_path:
             start_setText('해당 파일은 최신 파일이라 복구 되지 않습니다.')
             return False
@@ -297,13 +299,13 @@ class FileToolUI(QtWidgets.QDialog):
         target_nuber_modelIndex = index_QModelIndex.sibling(
             index_QModelIndex.row(),1)
         old_number = target_nuber_modelIndex.data()
-        # print(u'debug: 이전 번호 : ' + old_number)
+        # _logger.info(u'debug: 이전 번호 : ' + old_number)
         restore_nameset.annotation = "파일 복구_" + restore_nameset.Get_version_str()
-        print(restore_nameset.annotation)
+        _logger.info(restore_nameset.annotation)
         restore_nameset.number_str = str(target_ver)
         restore_nameset.Set_version_number_up()
-        # print(u'debug: ' + old_full_path)
-        # print(u'debug: ' + restore_nameset.full_path)
+        # _logger.info(u'debug: ' + old_full_path)
+        # _logger.info(u'debug: ' + restore_nameset.full_path)
         if restore_nameset.name == self.maxFileNameEdit.text():
             start_setText('파일명 변경전 열린 파일을 저장...')
             self.SaveMaxFile()
@@ -316,7 +318,7 @@ class FileToolUI(QtWidgets.QDialog):
         start_setText = self.state_bar_qlabel.setText
         add_two_str = '{} {}'.format
         qBox = QtWidgets.QMessageBox
-        # print(u'debug: 파일 삭제')
+        # _logger.info(u'debug: 파일 삭제')
         a_QItemSelectionModel = self.filesList_tree_widget.selectionModel()
         if not a_QItemSelectionModel.hasSelection():
             start_setText('잘못된 선택입니다.')
@@ -350,9 +352,9 @@ class FileToolUI(QtWidgets.QDialog):
     # UI 업데이트
     def ReturnNameEdit(self):
         self.version_label.setText("Va00")
-        print("debug: returnNameEdit")
+        _logger.info("debug: returnNameEdit")
     def UpdateUI(self):
-        print("debug: UpdateUI")
+        _logger.info("debug: UpdateUI")
         self.MoveBackupFile()
         self.GetFileList()
         self.filesList_tree_widget.sortByColumn(0, QtCore.Qt.AscendingOrder)
@@ -397,7 +399,7 @@ class FileToolUI(QtWidgets.QDialog):
             for file_collection in self.unique_file_set_collection_list:
                 if len(file_collection) > 1:
                     for file_set in file_collection[:-1]:
-                        print(file_set.full_path)
+                        _logger.info(file_set.full_path)
                         if file_set.number_str == "":
                             continue
                         new_full_path = "{0}{1}, V{2}{3}_{4}{5}".format(
@@ -495,7 +497,7 @@ class FileToolUI(QtWidgets.QDialog):
     def SaveMaxFile(self, isVersionUp_bool = False):
         ''' 유아이 정보를 기반으로 파일을 저장
         '''
-        print('버튼 연결 test: %s \n' % str(isVersionUp_bool))
+        _logger.info('버튼 연결 test: %s \n' % str(isVersionUp_bool))
         annotation_str = self.fileannotationEdit.text()
         annotation_enable = True
         if annotation_str == FileToolUI._annotation_default_str:
@@ -511,8 +513,8 @@ class FileToolUI(QtWidgets.QDialog):
             try:
                 current_version_int = int(current_version_str[2:])
             except:
-                print("넘버링 변환오류")
-                print(current_version_str)
+                _logger.info("넘버링 변환오류")
+                _logger.info(current_version_str)
                 current_version_int = 0
             new_num_str = str(current_version_int+1)
             if len(new_num_str) == 1:
@@ -537,14 +539,14 @@ class FileToolUI(QtWidgets.QDialog):
         #test_modelIndex = index_QModelIndex
         run_string = ""
         target_modelIndex = index_QModelIndex.sibling(index_QModelIndex.row(),3)
-        print('맥스파일 열기 %s' % str((target_modelIndex.row())) )
-        print('맥스파일 열기2 %s' % str(target_modelIndex.column()) )
-        print('data : {}'.format(target_modelIndex.data()))
-        print('item부모 %d' % index_QModelIndex.parent().row() )
+        _logger.info('맥스파일 열기 %s' % str((target_modelIndex.row())) )
+        _logger.info('맥스파일 열기2 %s' % str(target_modelIndex.column()) )
+        _logger.info('data : {}'.format(target_modelIndex.data()))
+        _logger.info('item부모 %d' % index_QModelIndex.parent().row() )
 
         #run_string = "loadMaxFile (\"%s\") useFileUnits:true quiet:true" % (self.fileSet_List[index_QModelIndex.row()].full_path)
         run_string = "loadMaxFile (@\"%s\") useFileUnits:true quiet:true" % (target_modelIndex.data())
-        print(run_string)
+        _logger.info(run_string)
         # MaxPlus.Core.EvalMAXScript(run_string)
         RT.execute(run_string)
         self.CurrentFileUIDataUpdate()
@@ -570,7 +572,7 @@ class FileToolUI(QtWidgets.QDialog):
             # MaxPlus.Core.EvalMAXScript(maxscript_string)
             RT.execute(maxscript_string)
         pass
-    
+
 #맥스 스크립트 창에서는 사용 못함 즉 필요없음.
 #if __name__ == "__main__":
 try:
